@@ -11,6 +11,11 @@ import Foundation
 
 class TestCollectionViewCell: UICollectionViewCell {
     var sliderItems: [String]?
+    var selectedIndex = 0
+    var oldSelectedIndex = 0
+    var buttons: [UIButton] = []
+    
+    var changeCardView: ((_ index: Int)->())?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,36 +48,62 @@ class TestCollectionViewCell: UICollectionViewCell {
     ]
     
     @objc func onclick(sender: UIButton) {
-        let button = sender as! UIButton
-        button.isSelected = true
+        let index = sender.tag - 100
+        if changeCardView != nil {
+            changeCardView!(index)
+        }
+        
+        
+//        buttons[selectedIndex].isSelected = true
+//        buttons[oldSelectedIndex].isSelected = false
+       
+        
     }
     
-    func addSliderButton(items: [String]) {
+    func addSliderButton(items: [String], selected: Int = 0) {
         self.sliderItems = items
         var contentWidth = 20
         
         for index in 0..<items.count {
             let label = UIButton()
             let item = items[index]
-            label.setAttributedTitle(NSAttributedString(string: item, attributes: TestCollectionViewCell.noramlAttributes ), for: .normal)
-            label.setAttributedTitle(NSAttributedString(string: item, attributes: TestCollectionViewCell.selectAttributes), for: .selected)
+            label.setTitle(item, for: .normal)
+            label.setTitleColor(.black, for: .normal)
             label.tag = index + 100
             label.layer.masksToBounds = true
             label.layer.cornerRadius = 18
             label.sizeToFit()
             
             label.frame = CGRect(x: contentWidth, y: 8, width: Int(label.frame.size.width) + 50, height: 36)
-            label.isSelected = false
             label.addTarget(self, action: #selector(onclick(sender: )), for: .touchUpInside)
+            buttons.append(label)
             self.sliderBar.addSubview(label)
-            
             contentWidth = contentWidth + Int(label.frame.size.width) + 10
         }
-        
+        buttons[selected].setTitleColor(.red, for: .normal)
         self.sliderBar.contentSize = CGSize(width: contentWidth, height: 36)
     }
     
+    func hideButton(index: Int) {
+        
+        self.cardView.frame.size.height = 98
+        self.cardView.layoutIfNeeded()
+        self.layoutIfNeeded()
+        
+        
+        oldSelectedIndex = selectedIndex
+        selectedIndex = index
+        buttons[selectedIndex].setTitleColor(.red, for: .normal)
+        buttons[oldSelectedIndex].setTitleColor(.black, for: .normal)
+    }
+    
     func addTaskDetails(items: [String]) {
+        if taskCardView.subviews.count > 0 {
+            for v in taskCardView.subviews {
+                v.removeFromSuperview()
+            }
+        }
+        
         var contentWidth = 10
         for index in 0..<items.count {
             let label = UILabel()

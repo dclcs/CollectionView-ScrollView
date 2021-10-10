@@ -8,7 +8,8 @@
 import UIKit
 
 class ViewController: UIViewController {
-
+    var isExpanded = true
+    var isSelectedIndex = 0
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,9 +31,11 @@ class ViewController: UIViewController {
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 335, height: 238)
+        if isExpanded {
+            return CGSize(width: 335, height: 238)
+        }
+        return CGSize(width: 335, height: 174)
 
-//        return CGSize(width: 335, height: 174)
     }
     
     
@@ -53,14 +56,42 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "TestCollectionViewCell", for: indexPath) as! TestCollectionViewCell
         
         let data =  getTestData()
+       
         cell.addSliderButton(items: data.map({ model in
             return model.category!
-        }))
-        let selectedData = data[0].tasks!
+        }), selected: isSelectedIndex)
+        let selectedData = data[isSelectedIndex].tasks!
         print(selectedData)
         cell.addTaskDetails(items: selectedData.map({ task in
             return task.name!
         }))
+        cell.btn.isHidden = data[isSelectedIndex].isAllComplete!
+        if data[isSelectedIndex].isAllComplete! {
+            cell.hideButton(index: isSelectedIndex)
+        }
+        
+       
+        cell.changeCardView = {[weak self] index in
+            guard let self = self else { return }
+            self.isExpanded = !(data[index].isAllComplete!)
+            self.isSelectedIndex = index
+            collectionView.reloadItems(at: [indexPath])
+
+//            collectionView.reloadData()
+            
+//
+//            let selected = data[index].tasks!
+//
+//            cell.btn.isHidden = data[index].isAllComplete!
+//            if data[index].isAllComplete! {
+//                cell.hideButton()
+//            }
+//            cell.layoutIfNeeded()
+//            cell.addTaskDetails(items: selected.map({ model in
+//                return model.name!
+//            }))
+            
+        }
         return cell
     }
     
